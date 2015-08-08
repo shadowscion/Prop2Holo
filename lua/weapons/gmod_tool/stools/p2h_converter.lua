@@ -30,7 +30,7 @@ if CLIENT then
 
     language.Add( "Tool.p2h_converter.name", "E2 Hologram Converter" )
     language.Add( "Tool.p2h_converter.desc", "Converts props into holograms for use with expression2." )
-    language.Add( "Tool.p2h_converter.0", "Click to select or deselect an entity. Hold USE to select entities within a radius. Right click to finalize." )
+    language.Add( "Tool.p2h_converter.0", "Click to select or deselect an entity. Hold USE to select entities within a radius. Hold SPRINT to restore the previous selection. Right click to finalize. Reload to clear selection." )
 
     TOOL.LeftClick  = function() return true end
     TOOL.RightClick = function() return true end
@@ -117,8 +117,11 @@ end
 -- Server
 util.AddNetworkString( "p2h_converter" )
 
-TOOL.Selection      = {}
-TOOL.SelectionColor = Color( 0, 255, 0, 125 )
+TOOL.Selection     = {}
+TOOL.PrevSelection = {}
+
+local col_Normal = Color( 0, 255, 0, 100 )
+local col_Clipped = Color( 0, 0, 255, 100 )
 
 -------------------------------------------
 -- Checks if an entity belongs to a player
@@ -148,8 +151,9 @@ function TOOL:Select( ent )
     if not self:IsSelected( ent ) then
         local oldColor = ent:GetColor()
 
-        ent:SetColor( self.SelectionColor )
+        ent:SetColor( ( ent.ClipData and tobool( self:GetClientNumber( "vclips" ) ) ) and col_Clipped or col_Normal )
         ent:SetRenderMode( RENDERMODE_TRANSALPHA )
+
         ent:CallOnRemove( "e2holo_convertor_onrmv", function( e )
             self:Deselect( e )
             self.Selection[e] = nil
@@ -173,6 +177,17 @@ function TOOL:Deselect( ent )
 end
 
 -------------------------------------------
+-- Removes all entities from selection
+function TOOL:Reload()
+    self.PrevSelection = {}
+    for ent, _ in pairs( self.Selection ) do
+        self.PrevSelection[ent] = self.Selection[ent]
+        self:Deselect( ent )
+    end
+    return true
+end
+
+-------------------------------------------
 -- Left click ( selection )
 function TOOL:LeftClick( eye )
 
@@ -180,14 +195,21 @@ function TOOL:LeftClick( eye )
     local user   = self:GetOwner()
     local hitEnt = eye.Entity
 
-    if not IsValid( user ) or ( hitEnt:IsWorld() and not user:KeyDown( IN_USE ) ) then
-        return false
-    end
+    if not IsValid( user ) then return false end
+    if hitEnt:IsWorld() and ( not user:KeyDown( IN_USE ) and not user:KeyDown( IN_SPEED ) ) then return false end
 
     if IsValid( hitEnt ) then
         if hitEnt:IsPlayer() then return false end
         if not IsPropOwner( user, hitEnt ) then return false end
         if not util.IsValidPhysicsObject( hitEnt, eye.PhysicsBone ) then return false end
+    end
+
+    -- Select previous
+    if user:KeyDown( IN_SPEED ) then
+        for ent, _ in pairs( self.PrevSelection ) do
+            self:Select( ent )
+        end
+        return true
     end
 
     -- Area select
@@ -199,17 +221,16 @@ function TOOL:LeftClick( eye )
             self:Select( ent )
         end
 
-        return false
+        return true
     end
 
     -- Deselect entity if already selected
-    if self:IsSelected( hitEnt ) then self:Deselect( hitEnt ) return false end
+    if self:IsSelected( hitEnt ) then self:Deselect( hitEnt ) return true end
 
     -- Otherwise add to selection
     self:Select( hitEnt )
 
-    -- No serverside tool sounds
-    return false
+    return true
 
 end
 
@@ -230,6 +251,8 @@ function TOOL:RightClick( eye )
     if not util.IsValidPhysicsObject( hitEnt, eye.PhysicsBone ) then return false end
 
     -- Remove base entity from selection
+    self.PrevSelection = {}
+    self.PrevSelection[hitEnt] = self.Selection[hitEnt]
     self:Deselect( hitEnt )
 
     -- Send entity list to client
@@ -244,6 +267,7 @@ function TOOL:RightClick( eye )
             net.WriteUInt( selectionCount, 16 )
             for ent, _ in pairs( self.Selection ) do
                 net.WriteUInt( ent:EntIndex(), 16 )
+                self.PrevSelection[ent] = self.Selection[ent]
                 self:Deselect( ent )
             end
         end
@@ -253,6 +277,6 @@ function TOOL:RightClick( eye )
     self.Selection = {}
 
     -- No serverside tool sounds
-    return false
+    return true
 
 end

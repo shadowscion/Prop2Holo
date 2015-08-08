@@ -212,6 +212,7 @@ local function FormatEntityInfo( name, info )
             for bi, bgroup in ipairs( entry.bodygroups ) do
                 line = line .. "\n        vec2(" .. bgroup.id .. "," .. bgroup.state .. ")" .. ( bi ~= #entry.bodygroups  and "," or "\n    )\n" )
             end
+            if i ~= #info then line = line .. "\n    #Holo data\n" end
         end
 
         if not entry.clips then ret = ret .. line continue end

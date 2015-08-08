@@ -5,6 +5,7 @@ You can find the tool under the wire "Tools" category.
 
 Features:
 - Supports visclip (must be the workshop version uploaded by Wrex)
+- Supports bodygroups and skins
 - Copy output to clipboard
 - Open output in a new tab in the e2 editor
 

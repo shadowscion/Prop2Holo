@@ -3,6 +3,13 @@ A quick STool I made (by request of Karbine) that allows you to turn a selection
 
 You can find the tool under the wire "Tools" category.
 
+<p align="center">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=z9x_82OIx-I
+" target="_blank"><img src="http://img.youtube.com/vi/z9x_82OIx-I/0.jpg" 
+alt="Watch on Youtube!" title="Watch on Youtube!" width="560" height="315"/></a>
+</p>
+
+
 Features:
 - Supports visclip (must be the workshop version uploaded by Wrex)
 - Supports bodygroups and skins

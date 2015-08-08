@@ -9,10 +9,10 @@ Features:
 - Open output in a new tab in the e2 editor
 
 Guide:
-*1) Look at a prop and click to add it to (or remove it from) the selection
-*2) Look at a prop (this prop will become the center of the contraption) and right click to output
-*3) In the output code, you can change the scale of the entire contraption at the top
-*4) If you wish to edit holograms after they have spawned, you must put the code in the "InitPostSpawn" block at the bottom, like so:
+- Look at a prop and click to add it to (or remove it from) the selection
+- Look at a prop (this prop will become the center of the contraption) and right click to output
+- In the output code, you can change the scale of the entire contraption at the top
+- If you wish to edit holograms after they have spawned, you must put the code in the "InitPostSpawn" block at the bottom, like so:
 ```
 elseif (CoreStatus == "InitPostSpawn") {
     CoreStatus = "RunThisCode"
@@ -24,7 +24,7 @@ elseif (CoreStatus == "InitPostSpawn") {
 }
 ```
 
-*5) If you wish to manipulate holograms in real time, you must put the code in the "RunThisCode" block at the bottom, like so:
+- If you wish to manipulate holograms in real time, you must put the code in the "RunThisCode" block at the bottom, like so:
 ```
 elseif (CoreStatus == "RunThisCode") {
     # You can use tickClk or clk here, just be sure to set your timers up in the InitPostSpawn block

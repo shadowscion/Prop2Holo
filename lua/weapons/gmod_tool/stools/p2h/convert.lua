@@ -9,8 +9,18 @@ local string = string
 local str_Holo = "    HN++,HT[HN,array] = array(%d,vec(%f,%f,%f),ang(%f,%f,%f),\"%s\",\"%s\",vec4(%d,%d,%d,%d))\n"
 
 local str_Header = [[
+#[
+    Important!!!!!!!!!
+
+    Holograms are not magic, they are still entities and they still take server resources.
+    You should consider them the same as you would any other prop.
+
+    Ideally this tool is to be used for minor details, not entire contraptions.
+]#
+
 @name <NAME>
-@persist [ID SpawnStatus CoreStatus]:string [HT CT BG]:table [HN CN SpawnCounter ScaleFactor ToggleColMat ToggleShading]
+@inputs BaseProp:entity
+@persist [ID SpawnStatus CoreStatus]:string [HT CT BG]:table [HN CN SpawnCounter ScaleFactor ToggleColMat ToggleShading] BaseParent:entity Rescale:vector
 
 if ( first() ) {
 
@@ -34,13 +44,14 @@ local str_Footer = [[
         elseif ( CoreStatus == "InitPostSpawn" ) {
 
         CODEBLOCK AT THE BOTTOM
-   ]#
+    ]#
 
+    BaseParent = BaseProp ?: entity()
+    Rescale = vec( ScaleFactor )
 
     function array:holo() {
         local Index = This[1, number]
-        local Parent = Index != 1 ? holoEntity( 1 ) : entity()
-        local Rescale = vec( ScaleFactor )
+        local Parent = Index != 1 ? holoEntity( 1 ) : BaseParent
 
         holoCreate( Index, Parent:toWorld( This[2, vector]*ScaleFactor ), Rescale, Parent:toWorld( This[3, angle] ), vec( 255 ), This[4, string] ?: "cube" )
         holoParent( Index, Parent )
@@ -51,14 +62,8 @@ local str_Footer = [[
         }
 
         if ( ToggleShading ) { holoDisableShading( Index, 1 ) }
-
-        if ( This[7, number] ) { holoSkin(Index, This[7, number] ) }
-
-        if ( BG[Index, array] ) {
-            foreach ( K, State:vector2 = BG[Index, array] ) {
-                holoBodygroup( Index, State[1], State[2] )
-            }
-        }
+        if ( This[7, number] ) { holoSkin( Index, This[7, number] ) }
+        if ( BG[Index, array] ) { foreach ( K, Group:vector2 = BG[Index, array] ) { holoBodygroup( Index, Group[1], Group[2] ) } }
 
         if ( CT[Index, table] ) {
             for ( I = 1, CT[Index, table]:count() ) {
@@ -121,14 +126,23 @@ elseif ( CoreStatus == "InitSpawn" ) {
 elseif ( CoreStatus == "InitPostSpawn" ) {
     CoreStatus = "RunThisCode"
 
-    runOnTick( 0 )
+    interval( 0 ) #start or stop clk
+
+    runOnTick( 0 ) #start or stop tick
 }
 
 
 #----------------------
 #-- This is where executing code goes
 elseif ( CoreStatus == "RunThisCode" ) {
+    if ( clk() ) {
+        #interval( 15 )
 
+    }
+
+    if ( tickClk() ) {
+
+    }
 }
 ]]
 

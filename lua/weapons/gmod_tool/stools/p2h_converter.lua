@@ -19,6 +19,7 @@ TOOL.ClientConVar = {
     ["radius"] = 64,
     ["clipboard"] = 1,
     ["openeditor"] = 1,
+    ["vclips"] = 1,
 }
 
 
@@ -46,7 +47,7 @@ if CLIENT then
         -- Root category element
         local root = vgui.Create( "DCollapsibleCategory" )
 
-        root:SetLabel( "Prop to Hologram Converter" )
+        root:SetLabel( "Options" )
         root:SetExpanded( 1 )
         self:AddItem( root )
 
@@ -83,6 +84,16 @@ if CLIENT then
         xbox:SetTextColor( PANEL_TEXT_COLOR )
         xbox:SetValue( 1 )
         xbox:SetConVar( "p2h_converter_openeditor" )
+        container:AddItem( xbox )
+
+        ------------------------------------
+        -- VClip toggle
+        local xbox = vgui.Create( "DCheckBoxLabel" )
+
+        xbox:SetText( "Enable visclip support." )
+        xbox:SetTextColor( PANEL_TEXT_COLOR )
+        xbox:SetValue( 1 )
+        xbox:SetConVar( "p2h_converter_vclips" )
         container:AddItem( xbox )
 
         ------------------------------------

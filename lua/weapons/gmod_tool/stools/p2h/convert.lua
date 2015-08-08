@@ -7,13 +7,13 @@ if not CLIENT then return end
 local string = string
 
 local str_Holo = "    HN++,HT[HN,array] = array(%d,vec(%f,%f,%f),ang(%f,%f,%f),\"%s\",\"%s\",vec4(%d,%d,%d,%d))\n"
-local str_Clip = "    CN++,CT[CN,array] = array(%d,%d,vec(%f,%f,%f),vec(%f,%f,%f))\n"
 
 local str_Header = [[
 @name <NAME>
-@persist [ID SpawnStatus CoreStatus]:string [HT CT]:table [HN CN SpawnCounter ScaleFactor ToggleColMat ToggleShading]
+@persist [ID SpawnStatus CoreStatus]:string [HT CT BG]:table [HN CN SpawnCounter ScaleFactor ToggleColMat ToggleShading]
 
-if (first()) {
+if ( first() ) {
+
     #Settings
     ScaleFactor   = 1 #scales the contraption
     ToggleColMat  = 1 #disables materials and color
@@ -31,61 +31,60 @@ local str_Footer = [[
 
         IF YOU WISH TO EDIT HOLOGRAMS AFTER SPAWNING, PLACE CODE AFTER THE
 
-        elseif (CoreStatus == "InitPostSpawn") {
+        elseif ( CoreStatus == "InitPostSpawn" ) {
 
         CODEBLOCK AT THE BOTTOM
-    ]#
+   ]#
 
 
     function array:holo() {
         local Index = This[1, number]
-        local Parent = Index != 1 ? holoEntity(1) : entity()
-        local Rescale = vec(ScaleFactor)
+        local Parent = Index != 1 ? holoEntity( 1 ) : entity()
+        local Rescale = vec( ScaleFactor )
 
-        holoCreate(Index, Parent:toWorld(This[2, vector] * ScaleFactor), Rescale, Parent:toWorld(This[3, angle]), vec(255), This[4, string] ?: "cube")
-        holoParent(Index, Parent)
+        holoCreate( Index, Parent:toWorld( This[2, vector]*ScaleFactor ), Rescale, Parent:toWorld( This[3, angle] ), vec( 255 ), This[4, string] ?: "cube" )
+        holoParent( Index, Parent )
 
-        if (ToggleColMat) {
-            holoMaterial(Index, This[5, string])
-            holoColor(Index, This[6, vector4])
+        if ( ToggleColMat ) {
+            holoMaterial( Index, This[5, string] )
+            holoColor( Index, This[6, vector4] )
         }
 
-        if (ToggleShading) { holoDisableShading(Index, 1) }
-    }
+        if ( ToggleShading ) { holoDisableShading( Index, 1 ) }
 
-    function array:clip() {
-        holoClipEnabled(This[1, number], This[2, number], 1)
-        holoClip(This[1, number], This[2, number], This[3, vector] * ScaleFactor, This[4, vector], 0)
+        if ( This[7, number] ) { holoSkin(Index, This[7, number] ) }
+
+        if ( BG[Index, array] ) {
+            foreach ( K, State:vector2 = BG[Index, array] ) {
+                holoBodygroup( Index, State[1], State[2] )
+            }
+        }
+
+        if ( CT[Index, table] ) {
+            for ( I = 1, CT[Index, table]:count() ) {
+                local Clip = CT[Index, table][I, array]
+                holoClipEnabled( Index, Clip[1, number], 1 )
+                holoClip( Index, Clip[1, number], Clip[2, vector]*ScaleFactor, Clip[3, vector], 0 )
+                CN++
+            }
+        }
     }
 
     function loadContraption() {
-        switch (SpawnStatus) {
+        switch ( SpawnStatus ) {
             case "InitSpawn",
-                if (clk("Start")) {
+                if ( clk( "Start" ) ) {
                     SpawnStatus = "LoadHolograms"
                 }
-                soundPlay("Blip", 0, "@^garrysmod/content_downloaded.wav", 0.212)
+                soundPlay( "Blip", 0, "@^garrysmod/content_downloaded.wav", 0.212 )
             break
 
             case "LoadHolograms",
-                while (perf() & holoCanCreate() &  SpawnCounter < HN) {
+                while ( perf() & holoCanCreate() &  SpawnCounter < HN ) {
                     SpawnCounter++
                     HT[SpawnCounter, array]:holo()
 
-                    if (SpawnCounter >= HN) {
-                        SpawnStatus = CN > 0 ? "LoadClips" : "PrintStatus"
-                        SpawnCounter = 0
-                        break
-                    }
-                }
-            break
-
-            case "LoadClips",
-                while (perf() & SpawnCounter < CN) {
-                    SpawnCounter++
-                    CT[SpawnCounter, array]:clip()
-
-                    if (SpawnCounter >= CN) {
+                    if ( SpawnCounter >= HN ) {
                         SpawnStatus = "PrintStatus"
                         SpawnCounter = 0
                         break
@@ -94,7 +93,7 @@ local str_Footer = [[
             break
 
             case "PrintStatus",
-                printColor( vec(125,255,125), "HoloCore: ", vec(255,255,255), "Loaded " + HN + " holograms and " + CN + " clips." )
+                printColor( vec( 125, 255, 125 ), "HoloCore: ", vec( 255, 255, 255 ), "Loaded " + HN + " holograms and " + CN + " clips." )
 
                 CoreStatus = "InitPostSpawn"
                 SpawnStatus = ""
@@ -102,8 +101,8 @@ local str_Footer = [[
         }
     }
 
-    runOnTick(1)
-    timer("Start", 500)
+    runOnTick( 1 )
+    timer( "Start", 500 )
 
     CoreStatus = "InitSpawn"
     SpawnStatus = "InitSpawn"
@@ -112,23 +111,23 @@ local str_Footer = [[
 
 #----------------------
 #-- Load the hologram and clip data arrays.
-elseif (CoreStatus == "InitSpawn") {
+elseif ( CoreStatus == "InitSpawn" ) {
     loadContraption()
 }
 
 
 #----------------------
-#-- This is like if (first()) { }, code here is run only once.
-elseif (CoreStatus == "InitPostSpawn") {
+#-- This is like if ( first() ) { }, code here is run only once.
+elseif ( CoreStatus == "InitPostSpawn" ) {
     CoreStatus = "RunThisCode"
 
-    runOnTick(0)
+    runOnTick( 0 )
 }
 
 
 #----------------------
 #-- This is where executing code goes
-elseif (CoreStatus == "RunThisCode") {
+elseif ( CoreStatus == "RunThisCode" ) {
 
 }
 ]]
@@ -140,6 +139,8 @@ elseif (CoreStatus == "RunThisCode") {
 local function SetupEntityInfo( base, ents )
     local ret = {}
 
+    local doClips = tobool( GetConVarNumber( "p2h_converter_vclips" ) )
+
     for _, ent in ipairs( ents ) do
         local entry = {
             lpos = base:WorldToLocal( ent:GetPos() ),
@@ -149,7 +150,28 @@ local function SetupEntityInfo( base, ents )
             color = ent:GetColor(),
         }
 
-        if not ent.ClipData then ret[#ret + 1] = entry continue end
+        if _ == 1 then entry.lang = ent:GetAngles() end
+
+        -- bodygroup support
+        if ent:GetSkin() > 0 then entry.skin = ent:GetSkin() end
+
+        local bgroups = ent:GetBodyGroups()
+        if #bgroups > 1 then
+            local groups = {}
+            for _, bgroup in pairs( bgroups ) do
+                if bgroup.num <= 1 then continue end
+                if bgroup.num == 2 then
+                    if ent:GetBodygroup( bgroup.id ) == 1 then groups[#groups + 1] = { id = bgroup.id, state = 1 } end
+                else
+                    for i = 2, bgroup.num do
+                        if ent:GetBodygroup( bgroup.id ) == i - 1 then groups[#groups + 1] = { id = bgroup.id, state = i - 1 } end
+                    end
+                end
+            end
+            if #groups > 0 then entry.bodygroups = groups end
+        end
+
+        if not doClips or not ent.ClipData then ret[#ret + 1] = entry continue end
 
         -- visclip support ( requires wrex's workshop version )
         entry.clips = {}
@@ -182,14 +204,24 @@ local function FormatEntityInfo( name, info )
             entry.color.r, entry.color.g, entry.color.b, entry.color.a
         )
 
+        -- bodygroup support
+        if entry.skin then line = string.Left( line, #line - 2 ) .. "," .. entry.skin .. ")" end
+
+        if entry.bodygroups then
+            line = line .. "\n    #Bodygroup data <" .. i .. ">\n    BG[" .. i .. ",array] = array("
+            for bi, bgroup in ipairs( entry.bodygroups ) do
+                line = line .. "\n        vec2(" .. bgroup.id .. "," .. bgroup.state .. ")" .. ( bi ~= #entry.bodygroups  and "," or "\n    )\n" )
+            end
+        end
+
         if not entry.clips then ret = ret .. line continue end
 
         -- visclip support ( requires wrex's workshop version )
-        line = line .. "\n    #Clip data <" .. i .. ">\n"
+        line = line .. "\n    #Clip data <" .. i .. ">\n    CT[" .. i .. ",table] = table("
 
         for ci, clip in ipairs( entry.clips ) do
-            line = line .. string.format(
-                str_Clip, i, ci,
+            line = line .. string.format("\n        array(%d,vec(%f,%f,%f),vec(%f,%f,%f))" .. (ci ~= #entry.clips and "," or "\n    )\n"),
+                ci,
                 clip.lpos.x, clip.lpos.y, clip.lpos.z,
                 clip.ldir.x, clip.ldir.y, clip.ldir.z
             )

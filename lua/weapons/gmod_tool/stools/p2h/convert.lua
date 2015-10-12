@@ -159,8 +159,8 @@ local function SetupEntityInfo( base, ents )
         local entry = {
             lpos = base:WorldToLocal( ent:GetPos() ),
             lang = base:WorldToLocalAngles( ent:GetAngles() ),
-            model = ent:GetModel(),
-            material = ent:GetMaterial(),
+            model = string.lower(ent:GetModel()),
+            material = string.lower(ent:GetMaterial()),
             color = ent:GetColor(),
         }
 
@@ -207,7 +207,7 @@ end
 -- FUNC: Returns formatted e2 code
 -- ARGS: script name, entity info table
 local function FormatEntityInfo( name, info )
-    local ret = string.Replace( str_Header, "<NAME>", name or "DefaultName" )
+    local ret = string.Replace( str_Header, "<NAME>", name or "defaultname" )
 
     for i, entry in pairs( info ) do
         local line = string.format(

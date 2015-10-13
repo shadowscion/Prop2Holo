@@ -22,7 +22,7 @@ local str_Header = [[
 @inputs BaseProp:entity
 @persist [ID SpawnStatus CoreStatus]:string [HT CT BG]:table [HN CN SpawnCounter ScaleFactor ToggleColMat ToggleShading] BaseParent:entity Rescale:vector
 
-if ( first() ) {
+if ( dupefinished() | first() ) {
 
     #Settings
     ScaleFactor   = 1 #scales the contraption
